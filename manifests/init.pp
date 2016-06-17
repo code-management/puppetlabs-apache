@@ -63,6 +63,7 @@ class apache (
   $keepalive              = $::apache::params::keepalive,
   $keepalive_timeout      = $::apache::params::keepalive_timeout,
   $max_keepalive_requests = $::apache::params::max_keepalive_requests,
+  $limitreqfieldsize      = '8190',
   $logroot                = $::apache::params::logroot,
   $logroot_mode           = $::apache::params::logroot_mode,
   $log_level              = $::apache::params::log_level,
@@ -78,6 +79,9 @@ class apache (
   $use_optional_includes  = $::apache::params::use_optional_includes,
   $use_systemd            = $::apache::params::use_systemd,
   $mime_types_additional  = $::apache::params::mime_types_additional,
+  $file_mode              = $::apache::params::file_mode,
+  $root_directory_options = $::apache::params::root_directory_options,
+  $root_directory_secured = false,
 ) inherits ::apache::params {
   validate_bool($default_vhost)
   validate_bool($default_ssl_vhost)
@@ -86,6 +90,7 @@ class apache (
   validate_bool($service_enable)
   validate_bool($service_manage)
   validate_bool($use_optional_includes)
+  validate_bool($root_directory_secured)
 
   $valid_mpms_re = $apache_version ? {
     '2.4'   => '(event|itk|peruser|prefork|worker)',
@@ -186,6 +191,7 @@ class apache (
       purge   => $purge_mod_dir,
       notify  => Class['Apache::Service'],
       require => Package['httpd'],
+      before  => Anchor['::apache::modules_set_up'],
     }
   }
 
@@ -238,14 +244,14 @@ class apache (
   }
 
   concat { $ports_file:
+    ensure  => present,
     owner   => 'root',
     group   => $::apache::params::root_group,
-    mode    => '0644',
+    mode    => $::apache::file_mode,
     notify  => Class['Apache::Service'],
     require => Package['httpd'],
   }
   concat::fragment { 'Apache ports header':
-    ensure  => present,
     target  => $ports_file,
     content => template('apache/ports_header.erb')
   }
@@ -272,9 +278,24 @@ class apache (
         $scriptalias          = '/var/www/localhost/cgi-bin'
         $access_log_file      = 'access.log'
 
-        ::portage::makeconf { 'apache2_modules':
-          content => $default_mods,
+        if is_array($default_mods) {
+          if versioncmp($apache_version, '2.4') >= 0 {
+            if defined('apache::mod::ssl') {
+              ::portage::makeconf { 'apache2_modules':
+                content => concat($default_mods, [ 'authz_core', 'socache_shmcb' ]),
+              }
+            } else {
+              ::portage::makeconf { 'apache2_modules':
+                content => concat($default_mods, 'authz_core'),
+              }
+            }
+          } else {
+            ::portage::makeconf { 'apache2_modules':
+              content => $default_mods,
+            }
+          }
         }
+
         file { [
           '/etc/apache2/modules.d/.keep_www-servers_apache-2',
           '/etc/apache2/vhosts.d/.keep_www-servers_apache-2'
@@ -324,11 +345,12 @@ class apache (
     # - $server_signature
     # - $trace_enable
     # - $rewrite_lock
+    # - $root_directory_secured
     file { "${::apache::conf_dir}/${::apache::params::conf_file}":
       ensure  => file,
       content => template($conf_template),
       notify  => Class['Apache::Service'],
-      require => [Package['httpd'], File[$ports_file]],
+      require => [Package['httpd'], Concat[$ports_file]],
     }
 
     # preserve back-wards compatibility to the times when default_mods was
@@ -347,7 +369,7 @@ class apache (
       all => $default_confd_files
     }
     if $mpm_module and $mpm_module != 'false' { # lint:ignore:quoted_booleans
-      class { "::apache::mod::${mpm_module}": }
+      include "::apache::mod::${mpm_module}"
     }
 
     $default_vhost_ensure = $default_vhost ? {

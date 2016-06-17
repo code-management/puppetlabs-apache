@@ -1,6 +1,6 @@
 require 'spec_helper_acceptance'
 
-describe 'apache::mod::suphp class', :if => fact('operatingsystem') == 'Ubuntu' do
+describe 'apache::mod::suphp class', :if => (fact('operatingsystem') == 'Ubuntu' and fact('operatingsystemmajrelease') != '16.04') do
   context "default suphp config" do
     it 'succeeds in puppeting suphp' do
       pp = <<-EOS
@@ -27,7 +27,11 @@ class { 'apache::mod::suphp': }
     end
 
     describe service('apache2') do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 

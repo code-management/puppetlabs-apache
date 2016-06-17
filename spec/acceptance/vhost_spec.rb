@@ -115,6 +115,7 @@ describe 'apache::vhost define' do
       it { is_expected.to contain "ProxyPass" }
       it { is_expected.to contain "ProxyPreserveHost On" }
       it { is_expected.to contain "ProxyErrorOverride On" }
+      it { is_expected.not_to contain "ProxyAddHeaders" }
       it { is_expected.not_to contain "<Proxy \*>" }
     end
   end
@@ -142,6 +143,7 @@ describe 'apache::vhost define' do
       it { is_expected.to contain "ProxyPassMatch /foo http://backend-foo/" }
       it { is_expected.to contain "ProxyPreserveHost On" }
       it { is_expected.to contain "ProxyErrorOverride On" }
+      it { is_expected.not_to contain "ProxyAddHeaders" }
       it { is_expected.not_to contain "<Proxy \*>" }
     end
   end
@@ -173,7 +175,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -213,7 +219,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -265,7 +275,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -322,7 +336,11 @@ describe 'apache::vhost define' do
       end
 
       describe service($service_name) do
-        it { is_expected.to be_enabled }
+        if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+          pending 'Should be enabled - Bug 760616 on Debian 8'
+        else
+          it { should be_enabled }
+        end
         it { is_expected.to be_running }
       end
 
@@ -380,7 +398,11 @@ describe 'apache::vhost define' do
       end
 
       describe service($service_name) do
-        it { is_expected.to be_enabled }
+        if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+          pending 'Should be enabled - Bug 760616 on Debian 8'
+        else
+          it { should be_enabled }
+        end
         it { is_expected.to be_running }
       end
 
@@ -414,7 +436,11 @@ describe 'apache::vhost define' do
       end
 
       describe service($service_name) do
-        it { is_expected.to be_enabled }
+        if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+          pending 'Should be enabled - Bug 760616 on Debian 8'
+        else
+          it { should be_enabled }
+        end
         it { is_expected.to be_running }
       end
 
@@ -488,7 +514,11 @@ describe 'apache::vhost define' do
       end
 
       describe service($service_name) do
-        it { should be_enabled }
+        if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+          pending 'Should be enabled - Bug 760616 on Debian 8'
+        else
+          it { should be_enabled }
+        end
         it { should be_running }
       end
 
@@ -523,7 +553,11 @@ describe 'apache::vhost define' do
       end
 
       describe service($service_name) do
-        it { is_expected.to be_enabled }
+        if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+          pending 'Should be enabled - Bug 760616 on Debian 8'
+        else
+          it { should be_enabled }
+        end
         it { is_expected.to be_running }
       end
 
@@ -564,7 +598,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -610,7 +648,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -651,7 +693,11 @@ describe 'apache::vhost define' do
     end
 
     describe service($service_name) do
-      it { is_expected.to be_enabled }
+      if (fact('operatingsystem') == 'Debian' && fact('operatingsystemmajrelease') == '8')
+        pending 'Should be enabled - Bug 760616 on Debian 8'
+      else
+        it { should be_enabled }
+      end
       it { is_expected.to be_running }
     end
 
@@ -748,7 +794,9 @@ describe 'apache::vhost define' do
       it { is_expected.to be_file }
       if fact('osfamily') == 'RedHat' and fact('operatingsystemmajrelease') == '7'
         it { is_expected.not_to contain 'NameVirtualHost test.server' }
-      elsif fact('operatingsystem') == 'Ubuntu' and fact('operatingsystemrelease') =~ /(14\.04|13\.10)/
+      elsif fact('operatingsystem') == 'Ubuntu' and fact('operatingsystemrelease') =~ /(14\.04|13\.10|16\.04)/
+        it { is_expected.not_to contain 'NameVirtualHost test.server' }
+      elsif fact('operatingsystem') == 'Debian' and fact('operatingsystemmajrelease') == '8'
         it { is_expected.not_to contain 'NameVirtualHost test.server' }
       else
         it { is_expected.to contain 'NameVirtualHost test.server' }
@@ -1013,7 +1061,7 @@ describe 'apache::vhost define' do
 
     describe file("#{$vhost_dir}/25-test.server.conf") do
       it { is_expected.to be_file }
-      it { is_expected.to contain 'ProxyPass          / test2/' }
+      it { is_expected.to contain 'ProxyPass        / test2/' }
     end
   end
 
@@ -1060,6 +1108,25 @@ describe 'apache::vhost define' do
     end
   end
 
+  describe 'rack_base_uris' do
+    if (fact('osfamily') != 'RedHat')
+      it 'applies cleanly' do
+        test = lambda do
+          pp = <<-EOS
+            class { 'apache': }
+            host { 'test.server': ip => '127.0.0.1' }
+            apache::vhost { 'test.server':
+              docroot          => '/tmp',
+              rack_base_uris  => ['/test'],
+            }
+          EOS
+          apply_manifest(pp, :catch_failures => true)
+        end
+        test.call
+      end
+    end
+  end
+
   describe 'no_proxy_uris' do
     it 'applies cleanly' do
       pp = <<-EOS
@@ -1076,8 +1143,8 @@ describe 'apache::vhost define' do
 
     describe file("#{$vhost_dir}/25-test.server.conf") do
       it { is_expected.to be_file }
-      it { is_expected.to contain 'ProxyPass          / http://test2/' }
       it { is_expected.to contain 'ProxyPass        http://test2/test !' }
+      it { is_expected.to contain 'ProxyPass        / http://test2/' }
     end
   end
 
@@ -1227,7 +1294,7 @@ describe 'apache::vhost define' do
 
     describe file("#{$vhost_dir}/25-test.server.conf") do
       it { is_expected.to be_file }
-      it { is_expected.to contain '<DirectoryMatch .*\.(svn|git|bzr)/.*>' }
+      it { is_expected.to contain '<DirectoryMatch .*\.(svn|git|bzr|hg|ht)/.*>' }
     end
   end
 
@@ -1245,6 +1312,7 @@ describe 'apache::vhost define' do
             wsgi_daemon_process_options => {processes => '2'},
             wsgi_process_group          => 'nobody',
             wsgi_script_aliases         => { '/test' => '/test1' },
+            wsgi_script_aliases_match   => { '/test/([^/*])' => '/test1' },
             wsgi_pass_authorization     => 'On',
           }
         EOS
@@ -1267,6 +1335,7 @@ describe 'apache::vhost define' do
             wsgi_import_script_options  => { application-group => '%{GLOBAL}', process-group => 'wsgi' },
             wsgi_process_group          => 'nobody',
             wsgi_script_aliases         => { '/test' => '/test1' },
+            wsgi_script_aliases_match   => { '/test/([^/*])' => '/test1' },
             wsgi_pass_authorization     => 'On',
             wsgi_chunked_request        => 'On',
           }
@@ -1325,11 +1394,55 @@ describe 'apache::vhost define' do
     end
   end
 
-  # So what does this work on?
-  if default['platform'] !~ /^(debian-(6|7)|el-(5|6|7))/
+  # Limit testing to Debian, since Centos does not have fastcgi package.
+  case fact('osfamily')
+  when 'Debian'
     describe 'fastcgi' do
       it 'applies cleanly' do
         pp = <<-EOS
+          $_os = $::operatingsystem
+
+          if $_os == 'Ubuntu' {
+            $_location = "http://archive.ubuntu.com/ubuntu/"
+            $_security_location = "http://archive.ubuntu.com/ubuntu/"
+            $_release = $::lsbdistcodename
+            $_release_security = "${_release}-security"
+            $_repos = "main universe multiverse"
+          } else {
+            $_location = "http://httpredir.debian.org/debian/"
+            $_security_location = "http://security.debian.org/"
+            $_release = $::lsbdistcodename
+            $_release_security = "${_release}/updates"
+            $_repos = "main contrib non-free"
+          }
+
+          include ::apt
+          apt::source { "${_os}_${_release}":
+            location    => $_location,
+            release     => $_release,
+            repos       => $_repos,
+            include_src => false,
+          }
+
+          apt::source { "${_os}_${_release}-updates":
+            location    => $_location,
+            release     => "${_release}-updates",
+            repos       => $_repos,
+            include_src => false,
+          }
+
+          apt::source { "${_os}_${_release}-security":
+            location    => $_security_location,
+            release     => $_release_security,
+            repos       => $_repos,
+            include_src => false,
+          }
+        EOS
+
+        #apt-get update may not run clean here. Should be OK.
+        apply_manifest(pp, :catch_failures => false)
+
+        pp2 = <<-EOS
           class { 'apache': }
           class { 'apache::mod::fastcgi': }
           host { 'test.server': ip => '127.0.0.1' }
@@ -1340,7 +1453,7 @@ describe 'apache::vhost define' do
             fastcgi_dir    => '/tmp/fast',
           }
         EOS
-        apply_manifest(pp, :catch_failures => true)
+        apply_manifest(pp2, :catch_failures => true, :acceptable_exit_codes => [0, 2])
       end
 
       describe file("#{$vhost_dir}/25-test.server.conf") do
